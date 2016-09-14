@@ -22,6 +22,10 @@ const MAX_LEN = 300;
 
 const pagePaths = fs.readdirSync(INPUT_DIR);
 
+const comments = parseHTML(pagePaths);
+console.log('Total comments: ' + comments.length);
+writeHugeObjectToDisk(comments, OUTPUT_FILE);
+
 
 function parseHTML(pagePaths) {
     const comments = [];
@@ -66,15 +70,18 @@ function parseHTML(pagePaths) {
     return comments;
 }
 
-
-
-console.log('Total comments: ' + comments.length);
-fs.appendFileSync(OUTPUT_FILE, '[');
-for (let i = 0; i < comments.length; i++) {
-    const comment = comments[i];
-    fs.appendFileSync(OUTPUT_FILE, JSON.stringify(comment));
-    if(i < comments.length - 1) {
-        fs.appendFileSync(OUTPUT_FILE, ',');
+/**
+ * Helper function for writing a huge object to disc.
+ * Calling JSON.stringify() directly on very large objects may cause memory issues within node.js
+ */
+function writeHugeObjectToDisk(comments, outputFile) {
+    fs.appendFileSync(outputFile, '[');
+    for (let i = 0; i < comments.length; i++) {
+        const comment = comments[i];
+        fs.appendFileSync(outputFile, JSON.stringify(comment));
+        if(i < comments.length - 1) {
+            fs.appendFileSync(outputFile, ',');
+        }
     }
+    fs.appendFileSync(outputFile, ']');
 }
-fs.appendFileSync(OUTPUT_FILE, ']');
