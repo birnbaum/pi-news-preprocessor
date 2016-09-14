@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "author": "Philipp Wiesner",
   "dependencies": {
-    "JSONStream": "^1.1.4",
     "cheerio": "^0.20.0",
     "crawler": "^0.4.3",
     "ent": "^2.2.0",

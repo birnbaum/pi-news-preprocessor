@@ -26,6 +26,7 @@ function crawlAtricles(urls) {
         forceUTF8: true,
         rateLimits: 5000,
         callback: (error, result, $) => {
+            // Getting the link to the translated content
             const link = $('#contentframe').find('iframe').attr('src');
             if(link) {
                 downloadArticle(link, i);
@@ -49,9 +50,10 @@ function downloadArticle(link, i) {
     var horseman = new Horseman();
     horseman
         .open(link)
-        .wait(4500)
+        .wait(4500) // Waiting for the Google tranlate JS redirect
         .html()
         .then(html => {
+            // Sanity check if the page is correct
             if(html.indexOf('headerimg') > -1) {
                 console.log('Saving #' + i);
                 fs.writeFile(`${OUTPUT_DIR}/${i}.html`, html);

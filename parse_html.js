@@ -22,41 +22,51 @@ const MAX_LEN = 300;
 
 const pagePaths = fs.readdirSync(INPUT_DIR);
 
-const comments = [];
 
-let counter = 0;
-for (const pagePath of pagePaths) {
-    console.log(counter);
-    const $ = cheerio.load(fs.readFileSync('./pages/' + pagePath, 'utf8'));
-    $('.google-src-text').remove();
+function parseHTML(pagePaths) {
+    const comments = [];
 
-    $('#commentlist').find('li').each((i, comment) => {
-        const author = $(comment).find('>.notranslate').find('>b').text();
+    let counter = 0;
+    for (const pagePath of pagePaths) {
+        console.log(counter);
+        const $ = cheerio.load(fs.readFileSync('./pages/' + pagePath, 'utf8'));
+        $('.google-src-text').remove();
 
-        if(author == '') {
-            return;
-        }
+        $('#commentlist').find('li').each((i, comment) => {
+            const author = $(comment).find('>.notranslate').find('>b').text();
 
-        let content = "";
-        $(comment).find('.commenttext').find('>*').each((i, el) => {
-            $(el).find('>span').each((i, sentence) => {
-                const line = ent.decode($(sentence).html().substr(1));
-                if(line[0] !== '#' && line[0] !== '@') {
-                    content += line + '\n';
-                }
+            // Removing malformed comments
+            if(author == '') {
+                return;
+            }
+
+            let content = "";
+            $(comment).find('.commenttext').find('>*').each((i, el) => {
+                $(el).find('>span').each((i, sentence) => {
+                    const line = ent.decode($(sentence).html().substr(1));
+                    // Removing comments that start with a reference to another commenter
+                    if(line[0] !== '#' && line[0] !== '@') {
+                        content += line + '\n';
+                    }
+                });
             });
+            
+            // Removing long comments and comments that contain links
+            if(content.length < MAX_LEN && content.length > 0 && content.indexOf('</a>') === -1) {
+                comments.push({
+                    a: author,
+                    c: content
+                });
+            }
         });
 
-        if(content.length < MAX_LEN && content.length > 0 && content.indexOf('</a>') === -1) {
-            comments.push({
-                a: author,
-                c: content
-            });
-        }
-    });
+        counter++;
+    }
 
-    counter++;
+    return comments;
 }
+
+
 
 console.log('Total comments: ' + comments.length);
 fs.appendFileSync(OUTPUT_FILE, '[');
